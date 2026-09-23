@@ -246,7 +246,7 @@ textUpper.indexOf('RESTRICTED') !== -1) {
                 finalRiskScore = Math.min(Math.max(finalRiskScore, 0), 98);
 
                 let status = "PASSED";
-                let auditSummary = " PASS: Real-time query against international consolidated screening lists and WCO tariff classifications returned zero active 
+                let auditSummary = "PASS: Real-time query against international consolidated screening lists and WCO tariff classifications returned zero active red-flags.";
 
 sanctions hits.";
 
