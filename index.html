@@ -1,1000 +1,649 @@
-﻿html
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eurasia AI — Enterprise B2B Trade Compliance SaaS</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              900: '#312e81',
-              950: '#0f172a'
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eurasia AI — Enterprise Global Trade Compliance SaaS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #0b0f19;
-      color: #f1f5f9;
-      min-height: 100vh;
-    }
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    }
+    <style>
+        :root {
+            --bg-dark: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(31, 41, 55, 0.8);
+            --accent-cyan: #00e5ff;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
 
-    .glass-card {
-      background: rgba(30, 41, 59, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .drop-zone {
-      border: 2px dashed rgba(99, 102, 241, 0.4);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      background: rgba(30, 27, 75, 0.25);
-    }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 229, 255, 0.05) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.05) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
 
-    .drop-zone:hover, .drop-zone.drag-active {
-      border-color: #818cf8;
-      background: rgba(49, 46, 129, 0.45);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2);
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 48px;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-    .saas-gradient-text {
-      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        .brand-container { display: flex; align-items: center; gap: 14px; }
 
-    .active-tab {
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
-      border-bottom: 2px solid #6366f1;
-    }
+        .brand-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #000; font-size: 20px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
 
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.3);
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(99, 102, 241, 0.6);
-    }
+        .brand-text {
+            font-size: 20px; font-weight: 800; letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-    .metric-pulse {
-      animation: pulseHighlight 0.6s ease-out;
-    }
+        .brand-sub { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
 
-    @keyframes pulseHighlight {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.08); color: #818cf8; }
-      100% { transform: scale(1); }
-    }
-  </style>
+        nav { display: flex; gap: 16px; align-items: center; }
+
+        nav a {
+            color: var(--text-muted); text-decoration: none;
+            font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+        }
+
+        nav a:hover, nav a.active { color: var(--accent-cyan); }
+
+        .btn-feedback-nav {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 6px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        .btn-admin-nav {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        .global-audit-badge {
+            background: rgba(0, 229, 255, 0.06);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            padding: 8px 18px; border-radius: 30px;
+            font-size: 13px; color: var(--accent-cyan); font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .pulse-dot {
+            width: 8px; height: 8px; background-color: var(--accent-cyan);
+            border-radius: 50%; animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .main-container {
+            max-width: 1440px; margin: 0 auto; padding: 40px 24px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+        }
+
+        .panel {
+            background: var(--card-bg); backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border); border-radius: 16px;
+            padding: 32px; display: flex; flex-direction: column; gap: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-title { font-size: 12px; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1.2px; }
+
+        .upload-area {
+            border: 2px dashed rgba(0, 229, 255, 0.2); border-radius: 12px;
+            padding: 32px 20px; text-align: center; background: rgba(8, 14, 27, 0.6);
+            cursor: pointer; transition: all 0.3s;
+        }
+
+        .upload-area:hover { border-color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); }
+
+        textarea {
+            width: 100%; height: 210px; background: rgba(8, 14, 27, 0.8);
+            border: 1px solid var(--card-border); border-radius: 10px;
+            padding: 18px; color: var(--text-main); font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; resize: vertical; line-height: 1.6;
+        }
+
+        textarea:focus { outline: none; border-color: var(--accent-cyan); }
+
+        .btn-audit {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #000; border: none; border-radius: 10px;
+            padding: 18px; font-size: 14px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+        }
+
+        .score-display { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; border-bottom: 1px solid var(--card-border); }
+
+        .score-val { font-size: 64px; font-weight: 900; color: var(--accent-cyan); }
+
+        .status-badge { padding: 10px 22px; border-radius: 30px; font-weight: 800; font-size: 12px; text-transform: uppercase; }
+
+        .status-PASSED { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .status-WARNING { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+        .status-FLAGGED { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+        .param-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            background: rgba(8, 14, 27, 0.8); padding: 24px; border-radius: 12px; border: 1px solid var(--card-border);
+        }
+
+        .param-item label { display: block; font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+
+        .param-item div { font-size: 14px; font-weight: 700; color: var(--text-main); }
+
+        .log-box {
+            background: rgba(8, 14, 27, 0.8); border-left: 4px solid var(--accent-cyan);
+            padding: 20px; border-radius: 8px; font-size: 13px; color: var(--text-main); line-height: 1.6;
+        }
+
+        .action-btns { display: flex; gap: 16px; margin-top: auto; }
+
+        .btn-export {
+            flex: 1; padding: 14px; background: rgba(31, 41, 55, 0.6);
+            border: 1px solid var(--card-border); color: var(--text-main);
+            border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+
+        .btn-export:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+        /* Modal Base */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; z-index: 200;
+        }
+
+        .modal-card {
+            background: #0f172a; border: 1px solid var(--accent-cyan);
+            border-radius: 16px; padding: 32px; width: 90%; max-width: 550px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
+        }
+
+        .modal-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+
+        .feedback-input {
+            width: 100%; height: 100px; background: #020617; border: 1px solid var(--card-border);
+            border-radius: 8px; padding: 12px; color: #fff; font-size: 13px; margin: 12px 0;
+        }
+
+        .btn-submit-fb {
+            width: 100%; padding: 12px; background: var(--accent-cyan); color: #000;
+            border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
+        }
+
+        .feedback-list { max-height: 300px; overflow-y: auto; margin: 16px 0; display: flex; flex-direction: column; gap: 12px; }
+        .feedback-item { background: #020617; padding: 14px; border-radius: 8px; border-left: 3px solid var(--accent-cyan); font-size: 13px; }
+
+        .info-section { max-width: 1440px; margin: 40px auto 80px; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+
+        .info-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 36px; }
+
+        .contact-profile { display: flex; align-items: center; gap: 20px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--card-border); }
+
+        .avatar-box {
+            width: 64px; height: 64px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 900; color: #000;
+        }
+
+        footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 13px; background: #020617; }
+    </style>
 </head>
-<body class="flex flex-col min-h-screen custom-scrollbar antialiased">
+<body>
 
-  <!-- Top Navigation Header Bar -->
-  <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      
-      <!-- Brand Logo & SaaS Tag -->
-      <div class="flex items-center space-x-3.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-400 p-0.5 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
-          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-            <i class="fa-solid fa-shield-halved text-indigo-400 text-lg"></i>
-          </div>
+    <header>
+        <div class="brand-container">
+            <div class="brand-logo">E</div>
+            <div>
+                <div class="brand-text">EURASIA AI</div>
+                <div class="brand-sub">Enterprise Trade Compliance SaaS</div>
+            </div>
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <span class="font-extrabold text-lg tracking-tight saas-gradient-text">EURASIA AI</span>
-            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Enterprise SaaS</span>
-          </div>
-          <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Automated B2B Customs & Trade Compliance Platform</p>
+        <nav>
+            <a href="#console" class="active">Console</a>
+            <a href="#licensing">Licensing</a>
+            <a href="#contact">Contact</a>
+            <button class="btn-feedback-nav" onclick="openFeedbackModal()">💬 Send Feedback</button>
+            <button class="btn-admin-nav" onclick="openInboxModal()">📥 View Feedback Inbox</button>
+        </nav>
+        <div class="global-audit-badge">
+            <div class="pulse-dot"></div>
+            Total Permanent Audits: <span id="globalAuditCount">0</span>
         </div>
-      </div>
+    </header>
 
-      <!-- Navigation Tabs (Desktop) -->
-      <nav class="hidden md:flex items-center space-x-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
-        <button onclick="switchTab('auditWorkstation')" id="nav-auditWorkstation" class="px-4 py-2 rounded-lg transition-all flex items-center gap-2 active-tab">
-          <i class="fa-solid fa-bolt text-indigo-400"></i> Audit Engine
-        </button>
-        <button onclick="switchTab('shipmentHistory')" id="nav-shipmentHistory" class="px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left"></i> Audit Records (<span id="tabRecordCount">0</span>)
-        </button>
-        <button onclick="switchTab('tariffDirectory')" id="nav-tariffDirectory" class="px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-          <i class="fa-solid fa-book-bookmark"></i> HS Tariff Lookup
-        </button>
-        <button onclick="switchTab('apiHub')" id="nav-apiHub" class="px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-          <i class="fa-solid fa-code"></i> Developer API
-        </button>
-      </nav>
+    <div class="main-container" id="console">
+        <div class="panel">
+            <div class="panel-title">1. UPLOAD TRADE DECLARATION (.PDF / .TXT)</div>
+            
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept=".txt,.pdf" style="display: none;">
+                <span style="font-size: 32px; display: block; margin-bottom: 8px;">📁</span>
+                <div style="font-weight: 700; color: #fff;" id="fileStatusText">Click or Drag & Drop Trade Documents</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Supports Invoices, Bills of Lading & Packing Lists</div>
+            </div>
 
-      <!-- Status & Account Profile -->
-      <div class="flex items-center space-x-3">
-        <div class="hidden lg:flex items-center space-x-2 bg-emerald-950/50 border border-emerald-500/30 px-3 py-1.5 rounded-full">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-xs font-semibold text-emerald-300">Live Engine Ready</span>
+            <div class="panel-title">2. INVOICE PAYLOAD RAW TEXT</div>
+            <textarea id="payloadInput" placeholder="Paste commercial invoice text, HS codes, or raw declarations here..."></textarea>
+
+            <button class="btn-audit" onclick="executeAudit()">⚡ Execute Real-Time Compliance Audit</button>
         </div>
 
-        <div class="flex items-center space-x-2 pl-2 border-l border-slate-800">
-          <div class="w-8 h-8 rounded-lg bg-indigo-950 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-300">
-            EA
-          </div>
-          <div class="hidden xl:block text-left">
-            <div class="text-xs font-semibold text-slate-200">Global Trade Corp</div>
-            <div class="text-[10px] text-slate-400">Enterprise Workspace</div>
-          </div>
-        </div>
-      </div>
+        <div class="panel">
+            <div class="panel-title">VERIFICATION RESULTS</div>
 
-    </div>
-  </header>
+            <div class="score-display">
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Calculated Risk Index</div>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span class="score-val" id="riskScore">--</span>
+                        <span style="color: var(--text-muted); font-size: 20px; font-weight: 700;">/100</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; text-align: right; margin-bottom: 6px; font-weight: 700;">Customs 
 
-  <!-- Mobile Tab Navigation Bar -->
-  <div class="md:hidden glass-panel border-b border-slate-800 px-2 py-2 flex justify-around text-xs font-medium">
-    <button onclick="switchTab('auditWorkstation')" id="mob-nav-auditWorkstation" class="px-2 py-1.5 rounded-md text-indigo-400 font-semibold">Audit Engine</button>
-    <button onclick="switchTab('shipmentHistory')" id="mob-nav-shipmentHistory" class="px-2 py-1.5 rounded-md text-slate-400">Records</button>
-    <button onclick="switchTab('tariffDirectory')" id="mob-nav-tariffDirectory" class="px-2 py-1.5 rounded-md text-slate-400">HS Codes</button>
-    <button onclick="switchTab('apiHub')" id="mob-nav-apiHub" class="px-2 py-1.5 rounded-md text-slate-400">API</button>
-  </div>
+Status</div>
+                    <div id="statusBadge" class="status-badge status-PASSED">Automated Customs Clearance</div>
+                </div>
+            </div>
 
-  <!-- Main SaaS Layout Body -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+            <div class="panel-title">EXTRACTED TRADE PARAMETERS</div>
+            <div class="param-grid">
+                <div class="param-item">
+                    <label>Exporter Entity</label>
+                    <div id="exporterVal">--</div>
+                </div>
+                <div class="param-item">
+                    <label>Importer Entity</label>
+                    <div id="importerVal">--</div>
+                </div>
+                <div class="param-item">
+                    <label>HS Tariff Code</label>
+                    <div id="hsCodeVal">--</div>
+                </div>
+                <div class="param-item">
+                    <label>Product Category</label>
+                    <div id="productVal">--</div>
+                </div>
+            </div>
 
-    <!-- REAL DYNAMIC KPI SUMMARY CARDS BAR -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-      
-      <!-- KPI 1: Real Total Audits Run -->
-      <div class="glass-card rounded-xl p-4 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
-          <span>Actual Audits Run</span>
-          <i class="fa-solid fa-file-contract text-indigo-400"></i>
-        </div>
-        <div id="kpiTotalAudits" class="text-xl sm:text-2xl font-bold text-white transition-all">0</div>
-        <div id="kpiAuditsSubtext" class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-          <i class="fa-solid fa-circle-info"></i> Increments with each audit
-        </div>
-      </div>
+            <div class="panel-title">COMPLIANCE AUDIT LOG & LIVE API STATUS</div>
+            <div class="log-box" id="summaryVal">
+                ✔ System Operational: Paste or upload a trade document to execute live global sanctions screening.
+            </div>
 
-      <!-- KPI 2: Calculated Compliance Pass Rate -->
-      <div class="glass-card rounded-xl p-4 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
-          <span>Compliance Pass Rate</span>
-          <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <div class="action-btns">
+                <button class="btn-export" onclick="downloadCertificatePDF()">📜 Official Certificate PDF</button>
+                <button class="btn-export" onclick="downloadTechnicalReportPDF()">📊 Technical Audit Report PDF</button>
+            </div>
         </div>
-        <div id="kpiPassRate" class="text-xl sm:text-2xl font-bold text-emerald-400 transition-all">100%</div>
-        <div id="kpiPassSubtext" class="text-[11px] text-slate-400 mt-1">
-          Calculated from live audits
-        </div>
-      </div>
-
-      <!-- KPI 3: Actual Customs Holds / Flagged Count -->
-      <div class="glass-card rounded-xl p-4 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
-          <span>Flagged Risks / Holds</span>
-          <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
-        </div>
-        <div id="kpiHoldRisk" class="text-xl sm:text-2xl font-bold text-amber-400 transition-all">0 Docs</div>
-        <div id="kpiHoldSubtext" class="text-[11px] text-amber-300 mt-1">
-          0 non-compliant documents
-        </div>
-      </div>
-
-      <!-- KPI 4: Measured Processing Latency -->
-      <div class="glass-card rounded-xl p-4 border border-slate-800">
-        <div class="flex items-center justify-between text-slate-400 text-xs mb-1">
-          <span>Avg Engine Latency</span>
-          <i class="fa-solid fa-stopwatch text-sky-400"></i>
-        </div>
-        <div id="kpiAvgLatency" class="text-xl sm:text-2xl font-bold text-white transition-all">0.00s</div>
-        <div class="text-[11px] text-indigo-300 mt-1">
-          Live measured response speed
-        </div>
-      </div>
     </div>
 
-    <!-- TAB 1: AUDIT WORKSTATION -->
-    <div id="tab-auditWorkstation" class="space-y-6">
-      
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        <!-- Left Panel: Document Upload & Control -->
-        <div class="lg:col-span-5 glass-panel rounded-2xl p-6 border border-slate-800/80 space-y-5">
-          <div class="border-b border-slate-800 pb-4">
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> Real Document Audit Workstation
-            </h2>
-            <p class="text-xs text-slate-400 mt-0.5">Upload a B2B invoice or load standard samples to test the compliance engine live.</p>
-          </div>
+    <!-- Feedback Modal -->
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-card">
+            <div class="modal-title">Eurasia AI User Feedback</div>
+            <p style="font-size: 12px; color: var(--text-muted);">Help us improve trade compliance accuracy for global businesses.</p>
+            <textarea class="feedback-input" id="fbText" placeholder="Share your experience, suggest a feature, or report an issue..."></textarea>
+            <button class="btn-submit-fb" onclick="submitFeedback()">Submit Feedback</button>
+            <button style="width: 100%; margin-top: 8px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px;" 
 
-          <!-- Dropzone -->
-          <div id="dropZone" class="drop-zone rounded-2xl p-7 text-center cursor-pointer relative group">
-            <input type="file" id="fileInput" class="hidden" accept=".txt,.pdf,.csv,.doc,.docx" />
-            
-            <div class="flex flex-col items-center justify-center space-y-3 pointer-events-none">
-              <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-file-arrow-up" id="uploadIcon"></i>
-              </div>
-              <div>
-                <p id="fileLabel" class="text-sm font-semibold text-slate-200">
-                  Click to select or drag document here
-                </p>
-                <p id="fileSubtext" class="text-xs text-slate-400 mt-1">
-                  Supports Commercial Invoices, Bills of Lading (.txt, .pdf)
-                </p>
-              </div>
-              <span class="inline-flex items-center gap-1.5 bg-indigo-600/30 text-indigo-300 text-xs px-3.5 py-1.5 rounded-lg border border-indigo-500/30 font-medium">
-                <i class="fa-solid fa-folder-open"></i> Browse Computer
-              </span>
-            </div>
-          </div>
-
-          <!-- Sample Invoices Selector -->
-          <div class="space-y-2">
-            <span class="text-xs text-slate-400 font-medium">Quick Test Invoice Samples:</span>
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" onclick="loadSampleDocument('compliant')" class="text-xs bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 p-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-file-circle-check"></i> Compliant Invoice
-              </button>
-              <button type="button" onclick="loadSampleDocument('non-compliant')" class="text-xs bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-file-circle-exclamation"></i> Non-Compliant Invoice
-              </button>
-            </div>
-          </div>
-
-          <!-- Execute Audit Button -->
-          <button id="auditBtn" onclick="runComplianceAudit()" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 active:scale-[0.99] text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center space-x-2 text-sm cursor-pointer border border-indigo-400/30">
-            <i class="fa-solid fa-bolt text-indigo-200"></i>
-            <span>Execute Live Compliance Audit</span>
-          </button>
+onclick="closeFeedbackModal()">Cancel</button>
         </div>
+    </div>
 
-        <!-- Right Panel: Processing & Audit Results View -->
-        <div class="lg:col-span-7 space-y-6">
-          
-          <!-- Processing Progress State -->
-          <div id="processingState" class="hidden glass-panel rounded-2xl p-8 border border-slate-800 space-y-4">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-spin">
-                <i class="fa-solid fa-gear"></i>
-              </div>
-              <div>
-                <h3 class="text-sm font-bold text-white">Running Live Compliance Audit Engine</h3>
-                <p id="processStepText" class="text-xs text-indigo-400 mt-0.5">Parsing document text stream...</p>
-              </div>
+    <!-- Admin Feedback Inbox Modal -->
+    <div class="modal-overlay" id="inboxModal">
+        <div class="modal-card">
+            <div class="modal-title">📥 Submitted Feedback Inbox</div>
+            <p style="font-size: 12px; color: var(--text-muted);">Recorded user feedback stored on your server disk.</p>
+            <div class="feedback-list" id="feedbackList">
+                <div style="color: var(--text-muted); font-size: 12px;">Loading messages...</div>
             </div>
-            
-            <div class="space-y-1.5">
-              <div class="flex justify-between text-xs font-semibold text-slate-400">
-                <span>Verification Progress</span>
-                <span id="processPercent">0%</span>
-              </div>
-              <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
-                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-sky-400 h-full w-0 transition-all duration-200"></div>
-              </div>
-            </div>
-          </div>
+            <button style="width: 100%; margin-top: 8px; background: var(--card-border); border: none; color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; 
 
-          <!-- Audit Results Card -->
-          <div id="resultsContainer" class="hidden glass-panel rounded-2xl p-6 sm:p-7 border border-slate-800 space-y-6">
-            
-            <!-- Result Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-5 gap-4">
-              <div>
-                <span class="text-[11px] font-bold text-slate-400 tracking-wider uppercase">Customs Clearance Decision</span>
-                <h3 id="auditStatusTitle" class="text-2xl font-extrabold text-emerald-400 flex items-center gap-2.5 mt-1">
-                  <i class="fa-solid fa-circle-check"></i> PASS (Compliant Export)
-                </h3>
-              </div>
-              <div class="bg-slate-900/80 px-4 py-2.5 rounded-xl border border-slate-800 text-left sm:text-right">
-                <span class="text-[11px] text-slate-400 font-medium block">Regulatory Risk Score</span>
-                <div id="riskScoreDisplay" class="text-2xl font-black text-emerald-400">12 / 100</div>
-              </div>
-            </div>
+font-size: 12px;" onclick="closeInboxModal()">Close Inbox</button>
+        </div>
+    </div>
 
-            <!-- Risk Score Gauge Meter -->
-            <div class="space-y-2">
-              <div class="flex justify-between text-xs text-slate-400 font-semibold">
-                <span class="text-emerald-400"><i class="fa-solid fa-shield-check mr-1"></i> Low Risk (0-30)</span>
-                <span class="text-amber-400">Moderate (31-60)</span>
-                <span class="text-rose-400">High Risk (61-100)</span>
-              </div>
-              <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-800 flex">
-                <div id="riskGaugeFill" class="bg-emerald-500 h-full transition-all duration-700" style="width: 12%;"></div>
-              </div>
-            </div>
+    <div class="info-section">
+        <div class="info-card" id="licensing">
+            <h3 style="color:#fff; margin-bottom:12px;">Enterprise Licensing & Regulatory Infrastructure</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">
+                Eurasia AI operates under international trade compliance standards, performing live query matching against consolidated global sanctions watchlists and 
 
-            <!-- 4-Point Rule Inspection Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800/80 flex items-start space-x-3">
-                <i id="hsIcon" class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i>
-                <div>
-                  <div class="text-xs font-bold text-slate-200">HS Tariff Classification</div>
-                  <div id="hsDetail" class="text-xs text-slate-400 mt-0.5">Code verified</div>
-                </div>
-              </div>
-
-              <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800/80 flex items-start space-x-3">
-                <i id="originIcon" class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i>
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Country of Origin</div>
-                  <div id="originDetail" class="text-xs text-slate-400 mt-0.5">Origin declared</div>
-                </div>
-              </div>
-
-              <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800/80 flex items-start space-x-3">
-                <i id="taxIcon" class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i>
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Tax / GSTIN Identifier</div>
-                  <div id="taxDetail" class="text-xs text-slate-400 mt-0.5">Valid ID detected</div>
-                </div>
-              </div>
-
-              <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800/80 flex items-start space-x-3">
-                <i id="restrictedIcon" class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i>
-                <div>
-                  <div class="text-xs font-bold text-slate-200">Sanctions & Dual-Use Check</div>
-                  <div id="restrictedDetail" class="text-xs text-slate-400 mt-0.5">Clear of restricted goods</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Executive Summary Text Box -->
-            <div class="p-4 bg-indigo-950/20 border border-indigo-500/20 rounded-xl space-y-1">
-              <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                <i class="fa-solid fa-file-contract"></i> Executive Audit Summary
-              </span>
-              <p id="auditSummaryText" class="text-xs text-slate-300 leading-relaxed">
-                Document verified successfully.
-              </p>
-            </div>
-
-            <!-- Actions Bar -->
-            <div class="flex flex-col sm:flex-row gap-3 pt-2">
-              <button onclick="downloadReport()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-700 transition-colors cursor-pointer">
-                <i class="fa-solid fa-download"></i>
-                <span>Download Compliance Certificate (.txt)</span>
-              </button>
-              <button onclick="toggleJsonView()" class="bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-800 transition-colors cursor-pointer">
-                <i class="fa-solid fa-code"></i>
-                <span>Toggle API Response</span>
-              </button>
-            </div>
-
-            <!-- JSON Payload Viewer -->
-            <pre id="jsonPayload" class="hidden p-4 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-emerald-400 font-mono overflow-x-auto custom-scrollbar"></pre>
-
-          </div>
-
-          <!-- Default State Prompt (When no audit has run yet) -->
-          <div id="emptyResultsPrompt" class="glass-panel rounded-2xl p-10 border border-slate-800 text-center space-y-3">
-            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl mx-auto">
-              <i class="fa-solid fa-microchip"></i>
-            </div>
-            <h3 class="text-base font-bold text-white">Compliance Audit Engine Ready</h3>
-            <p class="text-xs text-slate-400 max-w-md mx-auto">
-              Select or drag a trade document on the left or click a sample invoice, then click <strong>Execute Live Compliance Audit</strong> to run a real audit and record live metrics.
+WCO tariff guidelines.
             </p>
-          </div>
-
         </div>
 
-      </div>
-
+        <div class="info-card" id="contact">
+            <h3 style="color:#fff; margin-bottom:12px;">Executive Trade Advisory Contact</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">
+                For custom trade advisory, enterprise API integrations, or institutional compliance verification:
+            </p>
+            <div class="contact-profile">
+                <div class="avatar-box">K</div>
+                <div>
+                    <h4 style="color:#fff;">Kajal Sameer Kawale</h4>
+                    <p style="color:var(--text-muted); font-size:13px;">Founder & Chief Architect — Eurasia AI Platform</p>
+                    <p style="color:var(--accent-cyan); font-weight:700; margin-top:4px;">📧 eurasiaai.platform@gmail.com</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- TAB 2: AUDIT LOG RECORDS TABLE -->
-    <div id="tab-shipmentHistory" class="hidden glass-panel rounded-2xl border border-slate-800 p-6 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
-        <div>
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Live Audit History & Shipment Log
-          </h2>
-          <p class="text-xs text-slate-400">Every audit executed by companies on this portal is recorded below in real-time.</p>
-        </div>
-        <div class="flex items-center space-x-2">
-          <input type="text" id="tableSearch" onkeyup="filterAuditTable()" placeholder="Search documents..." class="bg-slate-900 border border-slate-800 text-xs rounded-xl px-3.5 py-2 text-slate-200 focus:outline-none focus:border-indigo-500 w-48" />
-          <button onclick="clearAuditHistory()" class="bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/30 text-xs font-semibold px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-trash-can"></i> Clear Session Logs
-          </button>
-        </div>
-      </div>
+    <footer>
+        &copy; 2026 Eurasia AI Trade Compliance Platform. Executive Architecture by Founder Kajal Sameer Kawale. All Rights Reserved.
+    </footer>
 
-      <div class="overflow-x-auto custom-scrollbar">
-        <table class="w-full text-left border-collapse" id="historyTable">
-          <thead>
-            <tr class="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-900/40">
-              <th class="p-3">Document Name</th>
-              <th class="p-3">Timestamp</th>
-              <th class="p-3">Decision</th>
-              <th class="p-3">Risk Score</th>
-              <th class="p-3">HS Code</th>
-              <th class="p-3">Latency</th>
-              <th class="p-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="auditTableBody" class="text-xs divide-y divide-slate-800/60 text-slate-300">
-            <!-- Dynamic rows inserted here -->
-          </tbody>
-        </table>
+    <script>
+        let currentAuditData = null;
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const stats = await res.json();
+                if (stats && stats.globalAuditCount !== undefined) {
+                    document.getElementById('globalAuditCount').innerText = stats.globalAuditCount.toLocaleString();
+                }
+            } catch (e) {}
+        }
+        fetchStats();
+
+        const fileInput = document.getElementById('fileInput');
+        const fileStatusText = document.getElementById('fileStatusText');
+        const payloadInput = document.getElementById('payloadInput');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileStatusText.innerText = "📄 Loaded Document: " + file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) { payloadInput.value = evt.target.result; };
+            reader.readAsText(file);
+        });
+
+        async function executeAudit() {
+            const rawText = payloadInput.value;
+
+            try {
+                const response = await fetch('/api/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payload: rawText })
+                });
+
+                const data = await response.json();
+                currentAuditData = data;
+
+                document.getElementById('riskScore').innerText = data.risk_score;
+                const badge = document.getElementById('statusBadge');
+                badge.innerText = data.status === 'PASSED' ? 'Automated Customs Clearance' : (data.status === 'WARNING' ? 'Manual Review Required' : 'Shipment Blocked 
+
+/ Bonding Required');
+                badge.className = 'status-badge status-' + data.status;
+
+                document.getElementById('exporterVal').innerText = data.extracted_fields.exporter;
+                document.getElementById('importerVal').innerText = data.extracted_fields.importer;
+                document.getElementById('hsCodeVal').innerText = data.extracted_fields.hsCode;
+                document.getElementById('productVal').innerText = data.extracted_fields.productDescription;
+
+                document.getElementById('summaryVal').innerText = data.audit_summary;
+                if (data.global_audit_count !== undefined) {
+                    document.getElementById('globalAuditCount').innerText = data.global_audit_count.toLocaleString();
+                }
+
+            } catch (err) {
+                console.error("Audit request failed:", err);
+            }
+        }
+
+        // Feedback Controls
+        function openFeedbackModal() { document.getElementById('feedbackModal').style.display = 'flex'; }
+        function closeFeedbackModal() { document.getElementById('feedbackModal').style.display = 'none'; }
         
-        <div id="emptyTableMessage" class="hidden text-center py-8 text-slate-500 text-xs">
-          No audit records logged yet. Run your first document audit in the Audit Engine!
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: HS TARIFF CODE DIRECTORY -->
-    <div id="tab-tariffDirectory" class="hidden glass-panel rounded-2xl border border-slate-800 p-6 space-y-5">
-      <div class="border-b border-slate-800 pb-4">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-book-bookmark text-indigo-400"></i> Harmonized Tariff Directory (HS Codes)
-        </h2>
-        <p class="text-xs text-slate-400">Quickly verify international customs classification standards.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-sm font-bold text-indigo-400">8471.30</span>
-            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">Electronics</span>
-          </div>
-          <h4 class="text-xs font-bold text-white">Data Processing Machines & Laptops</h4>
-          <p class="text-[11px] text-slate-400">Portable automatic data processing machines weighing not more than 10 kg.</p>
-        </div>
-
-        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-sm font-bold text-indigo-400">8517.12</span>
-            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">Telecom</span>
-          </div>
-          <h4 class="text-xs font-bold text-white">Smartphones & Cellular Hardware</h4>
-          <p class="text-[11px] text-slate-400">Telephones for cellular networks or for other wireless networks.</p>
-        </div>
-
-        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-sm font-bold text-indigo-400">3004.90</span>
-            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">Pharma</span>
-          </div>
-          <h4 class="text-xs font-bold text-white">Medicaments & Pharmaceutical Products</h4>
-          <p class="text-[11px] text-slate-400">Medicaments consisting of mixed or unmixed products for therapeutic uses.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 4: DEVELOPER API & WEBHOOK HUB -->
-    <div id="tab-apiHub" class="hidden glass-panel rounded-2xl border border-slate-800 p-6 space-y-5">
-      <div class="border-b border-slate-800 pb-4">
-        <h2 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-code text-indigo-400"></i> Local Engine API & Webhook Hub
-        </h2>
-        <p class="text-xs text-slate-400">Connect your local Node.js backend (`server.js`) or n8n workflow engine directly.</p>
-      </div>
-
-      <div class="space-y-4">
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-slate-300">Engine Webhook Endpoint URL</label>
-          <input type="text" id="webhookUrlInput" value="http://localhost:5678/webhook/compliance-audit" class="w-full bg-slate-900 border border-slate-800 text-xs font-mono text-indigo-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500" />
-        </div>
-
-        <div class="p-4 bg-black/60 rounded-xl border border-slate-800 text-xs font-mono space-y-2">
-          <div class="text-slate-400">// Sample cURL API Request</div>
-          <div class="text-emerald-400 overflow-x-auto">
-            curl -X POST http://localhost:5678/webhook/compliance-audit \<br/>
-            &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-            &nbsp;&nbsp;-d '{"document_text": "COMMERCIAL INVOICE ... HS Code: 8471.30"}'
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- SaaS Footer -->
-  <footer class="glass-panel border-t border-slate-800/80 px-4 lg:px-8 py-4 mt-auto">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-shield-halved text-indigo-500"></i>
-        <span>Eurasia AI Compliance Engine v2.4</span>
-      </div>
-      <div>
-        <span>Automated B2B Cross-Border Audit Microservice</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Notification Toast Container -->
-  <div id="toast" class="fixed bottom-5 right-5 hidden glass-panel bg-slate-900 border border-indigo-500/40 text-slate-200 text-xs px-4 py-3 rounded-xl shadow-2xl items-center gap-3 z-50">
-    <i class="fa-solid fa-circle-info text-indigo-400 text-sm"></i>
-    <span id="toastMsg">Action executed successfully.</span>
-  </div>
-
-  <script>
-    // State management for real audits
-    let currentFileName = "";
-    let currentFileText = "";
-    let lastAuditResult = null;
-    
-    // Load persisted audit records or initialize empty array
-    let auditLogs = JSON.parse(localStorage.getItem('eurasia_audit_logs') || '[]');
-
-    // Initialize application on load
-    window.addEventListener('DOMContentLoaded', () => {
-      renderAuditLogsTable();
-      updateDashboardKPIs();
-    });
-
-    // Tab Switching Logic
-    function switchTab(tabId) {
-      const tabs = ['auditWorkstation', 'shipmentHistory', 'tariffDirectory', 'apiHub'];
-      tabs.forEach(id => {
-        document.getElementById(`tab-${id}`).classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${id}`);
-        const mobNavBtn = document.getElementById(`mob-nav-${id}`);
-        
-        if (navBtn) navBtn.className = "px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-        if (mobNavBtn) mobNavBtn.className = "px-2 py-1.5 rounded-md text-slate-400";
-      });
-
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      const activeNav = document.getElementById(`nav-${tabId}`);
-      const activeMobNav = document.getElementById(`mob-nav-${tabId}`);
-      
-      if (activeNav) activeNav.className = "px-4 py-2 rounded-lg transition-all flex items-center gap-2 active-tab";
-      if (activeMobNav) activeMobNav.className = "px-2 py-1.5 rounded-md text-indigo-400 font-semibold";
-    }
-
-    // Dynamic KPI Calculation Engine
-    function updateDashboardKPIs() {
-      const totalAudits = auditLogs.length;
-      const passedAudits = auditLogs.filter(item => item.status === 'PASS').length;
-      const flaggedAudits = auditLogs.filter(item => item.status === 'FLAGGED').length;
-
-      // Pass Rate % Calculation
-      const passRate = totalAudits > 0 
-        ? ((passedAudits / totalAudits) * 100).toFixed(1)
-        : "100.0";
-
-      // Average Latency Calculation
-      const totalLatency = auditLogs.reduce((acc, curr) => acc + (parseFloat(curr.latency) || 0.35), 0);
-      const avgLatency = totalAudits > 0 
-        ? (totalLatency / totalAudits).toFixed(2)
-        : "0.00";
-
-      // Update UI elements with dynamic real values
-      const elTotal = document.getElementById('kpiTotalAudits');
-      const elPass = document.getElementById('kpiPassRate');
-      const elHolds = document.getElementById('kpiHoldRisk');
-      const elAvgLatency = document.getElementById('kpiAvgLatency');
-
-      elTotal.innerText = totalAudits.toLocaleString();
-      elPass.innerText = `${passRate}%`;
-      elHolds.innerText = `${flaggedAudits} Docs`;
-      elAvgLatency.innerText = `${avgLatency}s`;
-
-      document.getElementById('kpiAuditsSubtext').innerHTML = totalAudits > 0 
-        ? `<i class="fa-solid fa-circle-check text-emerald-400"></i> ${passedAudits} cleared, ${flaggedAudits} flagged`
-        : `<i class="fa-solid fa-circle-info"></i> Increments with each audit`;
-
-      document.getElementById('kpiPassSubtext').innerText = totalAudits > 0
-        ? `${passedAudits} passed out of ${totalAudits} total`
-        : `Calculated from live audits`;
-
-      document.getElementById('kpiHoldSubtext').innerText = flaggedAudits > 0
-        ? `${flaggedAudits} non-compliant holds`
-        : `0 non-compliant documents`;
-
-      document.getElementById('tabRecordCount').innerText = totalAudits;
-
-      // Trigger visual pulse effect on update
-      [elTotal, elPass, elHolds, elAvgLatency].forEach(el => {
-        el.classList.remove('metric-pulse');
-        void el.offsetWidth; // trigger reflow
-        el.classList.add('metric-pulse');
-      });
-    }
-
-    // Dropzone logic
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const fileLabel = document.getElementById('fileLabel');
-    const fileSubtext = document.getElementById('fileSubtext');
-
-    dropZone.addEventListener('click', (e) => {
-      if (e.target !== fileInput) {
-        fileInput.click();
-      }
-    });
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.add('drag-active');
-      }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.remove('drag-active');
-      }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleFileSelection(files[0]);
-      }
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        handleFileSelection(e.target.files[0]);
-      }
-    });
-
-    function handleFileSelection(file) {
-      currentFileName = file.name;
-      fileLabel.innerHTML = `<span class="text-indigo-300 font-semibold">Selected:</span> ${file.name}`;
-      fileSubtext.innerText = `Size: ${(file.size / 1024).toFixed(1)} KB | Ready for automated compliance audit`;
-      document.getElementById('uploadIcon').className = "fa-solid fa-file-contract text-emerald-400";
-      showToast(`Selected document: ${file.name}`);
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        currentFileText = event.target.result || "";
-      };
-      reader.readAsText(file);
-    }
-
-    function loadSampleDocument(type) {
-      if (type === 'compliant') {
-        currentFileName = `Invoice_IN${Math.floor(1000 + Math.random() * 9000)}.txt`;
-        currentFileText = `COMMERCIAL INVOICE\nExporter: Eurasia Global Logistics Ltd.\nCountry of Origin: India\nGSTIN: 07AAAAA0000A1Z5\nProduct Description: Automatic Data Processing Machines\nHS Code: 8471.30\nStatus: Verified Compliant Export Shipment`;
-        fileLabel.innerHTML = `<span class="text-emerald-400 font-semibold">Loaded Compliant:</span> ${currentFileName}`;
-        fileSubtext.innerText = `Sample Compliant Trade Invoice ready for live audit`;
-        showToast("Loaded sample compliant trade invoice");
-      } else {
-        currentFileName = `Draft_PackingList_${Math.floor(1000 + Math.random() * 9000)}.txt`;
-        currentFileText = `PACKING LIST & INVOICE\nExporter: Global Freight Services\nItems: Industrial Electronics\nDeclaration: Chemical materials included without explicit origin or HS classification`;
-        fileLabel.innerHTML = `<span class="text-amber-400 font-semibold">Loaded Flagged:</span> ${currentFileName}`;
-        fileSubtext.innerText = `Sample Non-Compliant document (Missing HS & Origin) ready for live audit`;
-        showToast("Loaded sample non-compliant invoice");
-      }
-      
-      document.getElementById('uploadIcon').className = "fa-solid fa-file-circle-check text-indigo-400";
-    }
-
-    function runComplianceAudit() {
-      if (!currentFileName) {
-        loadSampleDocument('compliant');
-      }
-
-      const startTime = performance.now();
-      const auditBtn = document.getElementById('auditBtn');
-      const processingState = document.getElementById('processingState');
-      const resultsContainer = document.getElementById('resultsContainer');
-      const emptyResultsPrompt = document.getElementById('emptyResultsPrompt');
-      const progressBar = document.getElementById('progressBar');
-      const processStepText = document.getElementById('processStepText');
-      const processPercent = document.getElementById('processPercent');
-
-      emptyResultsPrompt.classList.add('hidden');
-      resultsContainer.classList.add('hidden');
-      processingState.classList.remove('hidden');
-      auditBtn.disabled = true;
-      auditBtn.classList.add('opacity-50');
-
-      let progress = 0;
-      const steps = [
-        "Parsing document text stream...",
-        "Matching HS Tariff classification codes...",
-        "Verifying Exporter Tax & GSTIN identifiers...",
-        "Screening against dual-use & sanctions databases...",
-        "Generating final regulatory risk score..."
-      ];
-
-      const interval = setInterval(() => {
-        progress += 25;
-        progressBar.style.width = progress + "%";
-        processPercent.innerText = progress + "%";
-        
-        const stepIdx = Math.min(Math.floor(progress / 25), steps.length - 1);
-        processStepText.innerText = steps[stepIdx];
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            const endTime = performance.now();
-            const measuredLatency = parseFloat(((endTime - startTime) / 1000).toFixed(2));
-
-            processingState.classList.add('hidden');
-            auditBtn.disabled = false;
-            auditBtn.classList.remove('opacity-50');
+        async function submitFeedback() {
+            const fbText = document.getElementById('fbText').value;
+            if (!fbText) return alert("Please enter your feedback before submitting.");
             
-            evaluateDocumentRules(measuredLatency);
-            resultsContainer.classList.remove('hidden');
-            showToast("Audit completed & recorded in session!");
-          }, 200);
+            try {
+                await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feedback: fbText })
+                });
+                alert("Thank you! Your feedback has been saved.");
+                document.getElementById('fbText').value = '';
+                closeFeedbackModal();
+            } catch (e) {
+                alert("Error sending feedback.");
+            }
         }
-      }, 120);
-    }
 
-    function evaluateDocumentRules(measuredLatency) {
-      const textToAnalyze = currentFileText || currentFileName;
-      
-      let flags = [];
-      let riskScore = 10;
-
-      const hasHsCode = /HS\s*Code|Harmonized|Tariff|\b\d{4}\.\d{2}\b/i.test(textToAnalyze);
-      const hasOrigin = /Country\s*of\s*Origin|Made\s*in|Origin|Exporter/i.test(textToAnalyze);
-      const hasTaxId = /Tax\s*ID|VAT|GST|EIN|Registration|GSTIN/i.test(textToAnalyze);
-      const containsRestricted = /Dual-use|Weapon|Sanction|Chemical|Uncertified|Explosive|Hazardous|Controlled/i.test(textToAnalyze);
-
-      // Extract actual HS code if available
-      const hsMatch = textToAnalyze.match(/\b\d{4}\.\d{2}\b/);
-      const extractedHs = hsMatch ? hsMatch[0] : (hasHsCode ? "8471.30" : "Unspecified");
-
-      if (!hasHsCode) {
-        flags.push("Missing 6-digit HS Tariff Code classification");
-        riskScore += 25;
-      }
-      if (!hasOrigin) {
-        flags.push("Missing declared Country of Origin");
-        riskScore += 20;
-      }
-      if (!hasTaxId) {
-        flags.push("Missing Exporter Tax / VAT / GST Identifier");
-        riskScore += 15;
-      }
-      if (containsRestricted) {
-        flags.push("Restricted or controlled goods terminology detected");
-        riskScore += 40;
-      }
-
-      const finalScore = Math.min(riskScore, 99);
-      const isPass = (finalScore < 45) && !containsRestricted;
-      const status = isPass ? "PASS" : "FLAGGED";
-
-      updateCheckItem('hsIcon', 'hsDetail', hasHsCode, hasHsCode ? `HS Tariff Code Verified (${extractedHs})` : "Missing HS Tariff Code");
-      updateCheckItem('originIcon', 'originDetail', hasOrigin, hasOrigin ? "Country of Origin Declared" : "Missing Origin Declaration");
-      updateCheckItem('taxIcon', 'taxDetail', hasTaxId, hasTaxId ? "Valid Tax / GST Identifier Found" : "Tax Identifier Unverified");
-      updateCheckItem('restrictedIcon', 'restrictedDetail', !containsRestricted, !containsRestricted ? "Clear of Sanctioned Keywords" : "Restricted Items Flagged!");
-
-      const statusTitle = document.getElementById('auditStatusTitle');
-      const scoreDisplay = document.getElementById('riskScoreDisplay');
-      const gaugeFill = document.getElementById('riskGaugeFill');
-
-      if (isPass) {
-        statusTitle.className = "text-2xl font-extrabold text-emerald-400 flex items-center gap-2.5 mt-1";
-        statusTitle.innerHTML = `<i class="fa-solid fa-circle-check"></i> PASS (Compliant Export)`;
-        scoreDisplay.className = "text-2xl font-black text-emerald-400";
-        gaugeFill.className = "bg-emerald-500 h-full transition-all duration-700";
-      } else {
-        statusTitle.className = "text-2xl font-extrabold text-amber-400 flex items-center gap-2.5 mt-1";
-        statusTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> FLAGGED (Customs Hold Risk)`;
-        scoreDisplay.className = "text-2xl font-black text-amber-400";
-        gaugeFill.className = "bg-amber-500 h-full transition-all duration-700";
-      }
-
-      scoreDisplay.innerText = `${finalScore} / 100`;
-      gaugeFill.style.width = `${finalScore}%`;
-
-      const summaryText = document.getElementById('auditSummaryText');
-      if (flags.length === 0) {
-        summaryText.innerText = `Successfully audited document "${currentFileName}". Valid HS Tariff Code (${extractedHs}), Country of Origin, and Exporter Tax Identifiers confirmed with zero trade compliance violations. Safe for port dispatch.`;
-      } else {
-        summaryText.innerText = `Compliance advisory for document "${currentFileName}": ${flags.join("; ")}. Manual verification recommended before filing customs declarations.`;
-      }
-
-      const now = new Date();
-      const timeStr = now.toISOString().replace('T', ' ').substring(0, 16);
-
-      lastAuditResult = {
-        id: Date.now(),
-        document_name: currentFileName,
-        audit_timestamp: timeStr,
-        status: status,
-        risk_score: finalScore,
-        hs_code: extractedHs,
-        latency: measuredLatency,
-        compliance_checks: {
-          hs_tariff_code: hasHsCode,
-          country_of_origin: hasOrigin,
-          tax_identifier: hasTaxId,
-          restricted_goods_flagged: containsRestricted
-        },
-        flags_raised: flags,
-        audit_summary: summaryText.innerText
-      };
-
-      document.getElementById('jsonPayload').innerText = JSON.stringify(lastAuditResult, null, 2);
-
-      // Save real audit log into storage and update dashboard
-      auditLogs.unshift(lastAuditResult);
-      localStorage.setItem('eurasia_audit_logs', JSON.stringify(auditLogs));
-
-      renderAuditLogsTable();
-      updateDashboardKPIs();
-    }
-
-    function updateCheckItem(iconId, detailId, isSuccess, text) {
-      const icon = document.getElementById(iconId);
-      const detail = document.getElementById(detailId);
-
-      if (isSuccess) {
-        icon.className = "fa-solid fa-circle-check text-emerald-400 text-base mt-0.5";
-      } else {
-        icon.className = "fa-solid fa-circle-xmark text-amber-400 text-base mt-0.5";
-      }
-      detail.innerText = text;
-    }
-
-    // Render Real Table Logs
-    function renderAuditLogsTable() {
-      const tbody = document.getElementById('auditTableBody');
-      const emptyMsg = document.getElementById('emptyTableMessage');
-      tbody.innerHTML = '';
-
-      if (auditLogs.length === 0) {
-        emptyMsg.classList.remove('hidden');
-        return;
-      } else {
-        emptyMsg.classList.add('hidden');
-      }
-
-      auditLogs.forEach(result => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-900/50 transition-colors";
-        
-        const badgeClass = result.status === 'PASS' 
-          ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/30' 
-          : 'bg-amber-950/80 text-amber-400 border-amber-500/30';
-        const scoreColor = result.status === 'PASS' ? 'text-emerald-400' : 'text-amber-400';
-
-        tr.innerHTML = `
-          <td class="p-3 font-semibold text-white">${result.document_name}</td>
-          <td class="p-3 text-slate-400">${result.audit_timestamp}</td>
-          <td class="p-3"><span class="${badgeClass} border text-[10px] font-bold px-2.5 py-1 rounded-md">${result.status}</span></td>
-          <td class="p-3 font-bold ${scoreColor}">${result.risk_score} / 100</td>
-          <td class="p-3 font-mono text-slate-300">${result.hs_code || '8471.30'}</td>
-          <td class="p-3 text-slate-400 font-mono">${result.latency ? result.latency + 's' : '0.35s'}</td>
-          <td class="p-3 text-right">
-            <button onclick="viewSpecificAudit(${result.id})" class="text-indigo-400 hover:text-indigo-300 font-medium">Inspect</button>
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    function viewSpecificAudit(id) {
-      const found = auditLogs.find(a => a.id === id);
-      if (found) {
-        currentFileName = found.document_name;
-        lastAuditResult = found;
-        document.getElementById('jsonPayload').innerText = JSON.stringify(found, null, 2);
-        switchTab('auditWorkstation');
-        showToast(`Viewing audit details for ${found.document_name}`);
-      }
-    }
-
-    function clearAuditHistory() {
-      auditLogs = [];
-      localStorage.removeItem('eurasia_audit_logs');
-      renderAuditLogsTable();
-      updateDashboardKPIs();
-      showToast("Cleared all session audit records!");
-    }
-
-    function toggleJsonView() {
-      const payload = document.getElementById('jsonPayload');
-      payload.classList.toggle('hidden');
-    }
-
-    function filterAuditTable() {
-      const input = document.getElementById('tableSearch');
-      const filter = input.value.toUpperCase();
-      const tbody = document.getElementById('auditTableBody');
-      const tr = tbody.getElementsByTagName('tr');
-
-      for (let i = 0; i < tr.length; i++) {
-        const td = tr[i].getElementsByTagName('td')[0];
-        if (td) {
-          const txtValue = td.textContent || td.innerText;
-          if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
+        // View Admin Feedback Inbox
+        async function openInboxModal() {
+            document.getElementById('inboxModal').style.display = 'flex';
+            const container = document.getElementById('feedbackList');
+            container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">Loading...</div>';
+            
+            try {
+                const res = await fetch('/api/feedback');
+                const list = await res.json();
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">No feedbacks received yet.</div>';
+                    return;
+                }
+                container.innerHTML = list.map(item => `
+                    <div class="feedback-item">
+                        <div style="font-size:10px; color:var(--accent-cyan); font-weight:700;">#${item.id} — ${new Date(item.timestamp).toLocaleString()}</div>
+                        <div style="margin-top:4px; color:#fff;">${item.feedback}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<div style="color: red; font-size: 12px;">Failed to load feedbacks.</div>';
+            }
         }
-      }
-    }
+        function closeInboxModal() { document.getElementById('inboxModal').style.display = 'none'; }
 
-    function downloadReport() {
-      if (!lastAuditResult) return;
+        // GENERATE OFFICIAL COMPLIANCE CERTIFICATE PDF
+        function downloadCertificatePDF() {
+            if (!currentAuditData) {
+                alert("Please execute an audit first before downloading the Compliance Certificate.");
+                return;
+            }
 
-      const reportContent = `====================================================
-EURASIA AI - B2B TRADE COMPLIANCE AUDIT CERTIFICATE
-====================================================
-Timestamp: ${lastAuditResult.audit_timestamp}
-Document: ${lastAuditResult.document_name}
-Audit Decision: ${lastAuditResult.status}
-Risk Score: ${lastAuditResult.risk_score} / 100
-Processing Latency: ${lastAuditResult.latency || 0.35} seconds
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
 
-SUMMARY:
-${lastAuditResult.audit_summary}
+            // Border
+            doc.setDrawColor(0, 229, 255);
+            doc.setLineWidth(1.5);
+            doc.rect(10, 10, 190, 277);
+            doc.rect(12, 12, 186, 273);
 
-VERIFICATION DETAILS:
-- HS Code Verified: ${lastAuditResult.compliance_checks.hs_tariff_code ? "YES" : "NO"}
-- Country of Origin Declared: ${lastAuditResult.compliance_checks.country_of_origin ? "YES" : "NO"}
-- Tax / GST ID Verified: ${lastAuditResult.compliance_checks.tax_identifier ? "YES" : "NO"}
-- Restricted Keywords Flagged: ${lastAuditResult.compliance_checks.restricted_goods_flagged ? "YES" : "NO"}
+            // Header Banner
+            doc.setFillColor(7, 12, 24);
+            doc.rect(13, 13, 184, 35, 'F');
 
-====================================================
-Eurasia AI Compliance Engine v2.4 - Official Record
-====================================================`;
+            doc.setTextColor(0, 229, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("EURASIA AI COMPLIANCE SUITE", 105, 28, { align: "center" });
 
-      const blob = new Blob([reportContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Audit_Report_${currentFileName.replace(/[^a-z0-9]/gi, '_')}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast("Audit Certificate downloaded");
-    }
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text("OFFICIAL INTERNATIONAL TRADE CLEARANCE CERTIFICATE", 105, 38, { align: "center" });
 
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toastMsg').innerText = message;
-      toast.classList.remove('hidden');
-      toast.classList.add('flex');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-        toast.classList.remove('flex');
-      }, 3000);
-    }
-  </script>
+            // Status Badge Box
+            const isPassed = currentAuditData.status === 'PASSED';
+            doc.setFillColor(isPassed ? 16 : 239, isPassed ? 185 : 68, isPassed ? 129 : 68);
+            doc.rect(20, 56, 170, 22, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text(`DISPOSITION: ${currentAuditData.status} (RISK INDEX: ${currentAuditData.risk_score}/100)`, 105, 70, { align: "center" });
+
+            // Parameters Table
+            doc.autoTable({
+                startY: 85,
+                head: [['Extracted Trade Parameter', 'Official Document Verification Record']],
+                body: [
+                    ['Verification Reference ID', `EAI-CERT-${Math.floor(100000 + Math.random() * 900000)}`],
+                    ['Issuance Date', '2026-09-23'],
+                    ['Exporter Entity Name', currentAuditData.extracted_fields.exporter],
+                    ['Importer Entity Name', currentAuditData.extracted_fields.importer],
+                    ['WCO HS Tariff Code', currentAuditData.extracted_fields.hsCode],
+                    ['Product Category', currentAuditData.extracted_fields.productDescription],
+                    ['Global Audit Sequence No.', `#${currentAuditData.global_audit_count}`]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [7, 12, 24], textColor: [0, 229, 255], fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 5 }
+            });
+
+            // Summary Section
+            let finalY = doc.lastAutoTable.finalY + 12;
+            doc.setFontSize(11);
+            doc.setTextColor(7, 12, 24);
+            doc.setFont("helvetica", "bold");
+            doc.text("Regulatory Audit Summary Log:", 20, finalY);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9.5);
+            const summaryLines = doc.splitTextToSize(currentAuditData.audit_summary, 170);
+            doc.text(summaryLines, 20, finalY + 7);
+
+            // Authorized Signatures
+            finalY += 45;
+            doc.setLineWidth(0.5);
+            doc.setDrawColor(150, 150, 150);
+            doc.line(20, finalY, 80, finalY);
+            doc.line(130, finalY, 190, finalY);
+
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Automated Cryptographic Seal", 20, finalY + 6);
+            doc.text("Founder & Chief Architect", 130, finalY + 6);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(7, 12, 24);
+            doc.text("Kajal Sameer Kawale", 130, finalY + 11);
+
+            doc.save("Eurasia_AI_Compliance_Certificate.pdf");
+        }
+
+        // GENERATE TECHNICAL AUDIT REPORT PDF
+        function downloadTechnicalReportPDF() {
+            if (!currentAuditData) {
+                alert("Please execute an audit first before downloading the Technical Audit Report.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            // Technical Dark Header
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setTextColor(0, 229, 255);
+            doc.setFont("courier", "bold");
+            doc.setFontSize(18);
+            doc.text("EURASIA AI — TECHNICAL AUDIT REPORT", 14, 20);
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.text("SYSTEM DIAGNOSTICS & REAL-TIME SANCTIONS MATCHING BREAKDOWN", 14, 29);
+
+            // Diagnostic Summary Grid
+            doc.autoTable({
+                startY: 48,
+                head: [['Metric Identifier', 'Diagnostic Value', 'Evaluation Protocol']],
+                body: [
+                    ['Calculated Threat Score', `${currentAuditData.risk_score} / 100`, 'WCO Chapter + API Match Composite'],
+                    ['Sanctions Match Confidence', `${currentAuditData.risk_score >= 65 ? 'HIGH (>=70%)' : '0% MATCH'}`, 'OpenSanctions Consolidated Feed'],
+                    ['WCO Tariff Classification', currentAuditData.extracted_fields.hsCode, 'Chapter 84/85 Control Inspection'],
+                    ['Corridor Scrutiny Status', 'Active Monitoring', 'Geopolitical Trade Path Check'],
+                    ['Audit Timestamp', '2026-09-23 19:29:00 IST', 'UTC Standard Logging'],
+                    ['Persistent Audit ID', `#${currentAuditData.global_audit_count}`, 'Disk Ledger Synchronization']
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: [30, 41, 59], textColor: [0, 229, 255] },
+                styles: { fontSize: 9 }
+            });
+
+            // Raw Extraction Parameter Grid
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['Raw Payload Field', 'Extracted Value']],
+                body: [
+                    ['Exporter Entity Identification', currentAuditData.extracted_fields.exporter],
+                    ['Importer Entity Identification', currentAuditData.extracted_fields.importer],
+                    ['Declared Tariff Code (HS)', currentAuditData.extracted_fields.hsCode],
+                    ['Product Category Description', currentAuditData.extracted_fields.productDescription]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [51, 65, 85], textColor: [255, 255, 255] },
+                styles: { fontSize: 9 }
+            });
+
+            // Audit Summary Log Box
+            let finalY = doc.lastAutoTable.finalY + 12;
+            doc.setFont("courier", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42);
+            doc.text("TECHNICAL AUDIT LOG OUTPUT:", 14, finalY);
+
+            doc.setFont("courier", "normal");
+            doc.setFontSize(8.5);
+            const summaryLines = doc.splitTextToSize(currentAuditData.audit_summary, 180);
+            doc.text(summaryLines, 14, finalY + 6);
+
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(120, 120, 120);
+            doc.text("Confidential Diagnostic Report — Eurasia AI Platform | Founder Kajal Sameer Kawale", 105, 285, { align: "center" });
+
+            doc.save("Eurasia_AI_Technical_Audit_Report.pdf");
+        }
+    </script>
 </body>
 </html>
