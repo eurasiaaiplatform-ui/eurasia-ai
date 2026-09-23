@@ -1,37 +1,37 @@
 const express = require('express');
-const app = express();
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
 
-// Parsing Middlewares
-app.use(express.json());
-app.use(express.text());
+const app = express();
 
-// Express Middleware for CORS
+// 1. GLOBAL CORS HEADERS (Must be first)
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    return res.end();
+    return res.status(200).end();
   }
   next();
 });
 
-// Serve static HTML/UI files
+// 2. PARSERS FOR TEXT AND JSON
+app.use(express.json({ limit: '50mb' }));
+app.use(express.text({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// 3. SERVE STATIC FRONTEND
 app.use(express.static(__dirname));
 
-// Persistent Audit Counter & Storage
+// PERSISTENT COUNTER & FEEDBACK
 let globalAuditCount = 1042;
 const feedbackFilePath = path.join(__dirname, 'feedback.json');
 
 function getFeedbackData() {
   if (!fs.existsSync(feedbackFilePath)) return [];
   try {
-    const data = fs.readFileSync(feedbackFilePath, 'utf8');
-    return JSON.parse(data);
+    return JSON.parse(fs.readFileSync(feedbackFilePath, 'utf8'));
   } catch (err) {
     return [];
   }
@@ -45,24 +45,29 @@ function saveFeedbackData(list) {
   }
 }
 
-// Route 1: Serve UI on Root
+// ROUTE 1: SERVE HOME PAGE
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route 2: Audit Counter Stats API
+// ROUTE 2: STATS API
 app.get('/api/stats', (req, res) => {
   res.json({ globalAuditCount });
 });
 
-// Route 3: Feedback Inbox (GET)
+// ROUTE 3: GET FEEDBACK
 app.get('/api/feedback', (req, res) => {
   res.json(getFeedbackData());
 });
 
-// Route 4: Submit Feedback (POST)
+// ROUTE 4: POST FEEDBACK
 app.post('/api/feedback', (req, res) => {
-  const { feedback } = req.body || {};
+  let bodyData = req.body;
+  if (typeof bodyData === 'string') {
+    try { bodyData = JSON.parse(bodyData); } catch(e) {}
+  }
+  const feedback = bodyData?.feedback || (typeof bodyData === 'string' ? bodyData : '');
+
   if (!feedback) {
     return res.status(400).json({ error: "Feedback content is required" });
   }
@@ -70,7 +75,7 @@ app.post('/api/feedback', (req, res) => {
   const currentList = getFeedbackData();
   const newItem = {
     id: currentList.length + 1,
-    feedback,
+    feedback: feedback,
     timestamp: new Date().toISOString()
   };
 
@@ -80,7 +85,7 @@ app.post('/api/feedback', (req, res) => {
   res.json({ status: "success", message: "Feedback saved successfully" });
 });
 
-// Route 5: Real-Time Trade Audit API Endpoint
+// ROUTE 5: TRADE AUDIT API
 app.post('/api/audit', (req, res) => {
   globalAuditCount++;
 
@@ -104,7 +109,6 @@ app.post('/api/audit', (req, res) => {
   const hsCode = hsMatch ? hsMatch[1].trim() : "8542.31";
   const productDescription = productMatch ? productMatch[1].trim() : "Integrated Microcircuit Controllers and Semiconductor Arrays";
 
-  // Risk evaluation logic
   let riskScore = 88;
   let status = "FLAGGED";
   let summary = "WARNING: Match detected against Consolidated Sanctions Watchlists. Restricted destination or entity corridor identified.";
@@ -129,10 +133,8 @@ app.post('/api/audit', (req, res) => {
   });
 });
 
-// Start Express Server
+// START SERVER
 const PORT = process.env.PORT || 5678;
-const server = http.createServer(app);
-
-server.listen(PORT, () => {
-  console.log(`Eurasia AI Server active on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Eurasia AI Server listening on port ${PORT}`);
 });
