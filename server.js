@@ -77,7 +77,7 @@ const server = http.createServer(app);
       audit_summary: summary
     }));
   });
-});
+
 
 server.listen(5678, () => {
   console.log("Eurasia AI Dynamic Compliance Engine active on http://localhost:5678");
