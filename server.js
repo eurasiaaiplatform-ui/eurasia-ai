@@ -1,20 +1,30 @@
 const express = require('express');
 const app = express();
 const http = require('http');
+const path = require('path');
 
-const server = http.createServer((req, res) => {
-  // Set CORS headers so the web browser can talk to port 5678
+app.use(express.json());
+
+// Express middleware for CORS
+app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle browser preflight checks
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
-    res.end();
-    return;
+    return res.end();
   }
+  next();
+});
 
+// Serve static HTML/UI files
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+const server = http.createServer(app);
   let body = [];
 
   // Read incoming file upload stream
