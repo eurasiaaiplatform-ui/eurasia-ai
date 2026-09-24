@@ -413,7 +413,8 @@
             reader.readAsText(file);
         });
 
-        function executeAudit() {
+        // CONNECTED TO SERVER.JS FOR REAL-WORLD DATA CALCULATION
+        async function executeAudit() {
             const rawText = payloadInput.value.trim();
 
             if (!rawText) {
@@ -421,53 +422,55 @@
                 return;
             }
 
-            // Trigger global cloud increment
             incrementGlobalAuditCount();
+            document.getElementById('summaryVal').innerText = "⏳ Querying OpenSanctions API & analyzing real-world compliance risk...";
 
-            let exporter = "Eurasia Trade Exporters Ltd";
-            let importer = "Global Imports & Logistics Corp";
-            let hsCode = "8517.12.00";
-            let productDescription = "Telecommunication Equipment & Semiconductors";
+            try {
+                const response = await fetch('/api/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payload: rawText })
+                });
 
-            if (rawText.toLowerCase().includes("exporter:")) {
-                const match = rawText.match(/exporter:\s*([^\n,]+)/i);
-                if (match) exporter = match[1];
+                const data = await response.json();
+
+                currentAuditData = {
+                    ...data,
+                    global_audit_count: currentGlobalCount + 1
+                };
+
+                document.getElementById('riskScore').innerText = data.risk_score;
+
+                const badge = document.getElementById('statusBadge');
+                if (data.status === 'PASSED') {
+                    badge.innerText = 'Automated Customs Clearance';
+                    badge.className = 'status-badge status-PASSED';
+                    badge.style = "";
+                } else if (data.status === 'FLAGGED') {
+                    badge.innerText = 'Mandatory Customs Hold';
+                    badge.className = 'status-badge'; 
+                    badge.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+                    badge.style.color = '#ef4444';
+                    badge.style.border = '1px solid #ef4444';
+                } else {
+                    badge.innerText = 'Manual Review Required';
+                    badge.className = 'status-badge';
+                    badge.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
+                    badge.style.color = '#f59e0b';
+                    badge.style.border = '1px solid #f59e0b';
+                }
+
+                document.getElementById('exporterVal').innerText = data.extracted_fields.exporter;
+                document.getElementById('importerVal').innerText = data.extracted_fields.importer;
+                document.getElementById('hsCodeVal').innerText = data.extracted_fields.hsCode;
+                document.getElementById('productVal').innerText = data.extracted_fields.productDescription;
+
+                document.getElementById('summaryVal').innerText = data.audit_summary;
+
+            } catch (err) {
+                console.error("API Error:", err);
+                document.getElementById('summaryVal').innerText = "❌ Error connecting to audit engine. Please ensure server.js is running.";
             }
-            if (rawText.toLowerCase().includes("importer:")) {
-                const match = rawText.match(/importer:\s*([^\n,]+)/i);
-                if (match) importer = match[1];
-            }
-            if (rawText.toLowerCase().includes("hs code:") || rawText.match(/\b\d{4}\.\d{2}\b/)) {
-                const match = rawText.match(/\b\d{4}\.\d{2}(\.\d{2})?\b/);
-                if (match) hsCode = match[0];
-            }
-
-            const data = {
-                status: 'PASSED',
-                risk_score: 12,
-                global_audit_count: currentGlobalCount + 1,
-                extracted_fields: {
-                    exporter: exporter,
-                    importer: importer,
-                    hsCode: hsCode,
-                    productDescription: productDescription
-                },
-                audit_summary: `✔ COMPLIANCE CLEARANCE CONFIRMED. WCO HS Code ${hsCode} matched against consolidated international trade databases. Sanctions check returned 0 high-risk conflicts. Vessel routing cleared for automated customs dispatch.`
-            };
-
-            currentAuditData = data;
-
-            document.getElementById('riskScore').innerText = data.risk_score;
-            const badge = document.getElementById('statusBadge');
-            badge.innerText = 'Automated Customs Clearance';
-            badge.className = 'status-badge status-PASSED';
-
-            document.getElementById('exporterVal').innerText = data.extracted_fields.exporter;
-            document.getElementById('importerVal').innerText = data.extracted_fields.importer;
-            document.getElementById('hsCodeVal').innerText = data.extracted_fields.hsCode;
-            document.getElementById('productVal').innerText = data.extracted_fields.productDescription;
-
-            document.getElementById('summaryVal').innerText = data.audit_summary;
         }
 
         // Feedback Modal Controls
