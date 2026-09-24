@@ -7,10 +7,10 @@ let pdfParse;
 try {
     pdfParse = require('pdf-parse');
 } catch (e) {
-    console.log("[INIT] pdf-parse not loaded. Text parsing active.");
+    console.log("[INIT] pdf-parse not loaded. Standard text parsing active.");
 }
 
-const PORT = 5678;
+const PORT = process.env.PORT || 5678;
 const COUNTER_FILE = path.join(__dirname, 'audit_counter.json');
 const FEEDBACK_FILE = path.join(__dirname, 'feedback_log.json');
 
@@ -31,7 +31,7 @@ function saveCounterToDisk() {
     } catch (err) {}
 }
 
-// Function to save feedback
+// Save User Feedback
 function saveFeedback(feedbackText) {
     let feedbacks = [];
     if (fs.existsSync(FEEDBACK_FILE)) {
@@ -119,7 +119,6 @@ const server = http.createServer(function(req, res) {
         return;
     }
 
-    // Endpoint to retrieve all user feedbacks
     if (req.method === 'GET' && req.url === '/api/feedback') {
         let feedbacks = [];
         if (fs.existsSync(FEEDBACK_FILE)) {
@@ -130,7 +129,6 @@ const server = http.createServer(function(req, res) {
         return;
     }
 
-    // Endpoint to receive user feedback
     if (req.method === 'POST' && req.url === '/api/feedback') {
         let body = [];
         req.on('data', function(chunk) { body.push(chunk); });
@@ -219,15 +217,14 @@ const server = http.createServer(function(req, res) {
                 let prodMatch = rawText.match(/(?:Product|Description|Goods|Item)[^\n\r:\=]*[:\=]\s*([^\n\r;,]+)/i);
                 if (prodMatch) product = prodMatch[1].trim();
 
+                // Live API Calls & Calculation
                 const importerSanctions = await queryRealWorldSanctionsAPI(importer);
                 const exporterSanctions = await queryRealWorldSanctionsAPI(exporter);
                 const totalSanctionsHits = importerSanctions.matches + exporterSanctions.matches;
                 const maxSanctionsConfidence = Math.max(importerSanctions.maxScore, exporterSanctions.maxScore);
 
                 let tariffRisk = 0;
-                if (hsCode.indexOf('8471') === 0 || hsCode.indexOf('8542') === 0 || textUpper.indexOf('DUAL-USE') !== -1 || textUpper.indexOf('DEFENSE') !== -1 || 
-
-textUpper.indexOf('RESTRICTED') !== -1) {
+                if (hsCode.indexOf('8471') === 0 || hsCode.indexOf('8542') === 0 || textUpper.indexOf('DUAL-USE') !== -1 || textUpper.indexOf('DEFENSE') !== -1 || textUpper.indexOf('RESTRICTED') !== -1) {
                     tariffRisk = 88;
                 } else if (hsCode.indexOf('84') === 0 || hsCode.indexOf('85') === 0) {
                     tariffRisk = 35;
@@ -236,9 +233,7 @@ textUpper.indexOf('RESTRICTED') !== -1) {
                 }
 
                 let corridorRisk = 0;
-                if (textUpper.indexOf('MOSCOW') !== -1 || textUpper.indexOf('RUSSIA') !== -1 || textUpper.indexOf('RU-') !== -1 || textUpper.indexOf('PROMTECH') !== -
-
-1) {
+                if (textUpper.indexOf('MOSCOW') !== -1 || textUpper.indexOf('RUSSIA') !== -1 || textUpper.indexOf('RU-') !== -1 || textUpper.indexOf('PROMTECH') !== -1) {
                     corridorRisk = 40;
                 }
 
@@ -246,15 +241,11 @@ textUpper.indexOf('RESTRICTED') !== -1) {
                 finalRiskScore = Math.min(Math.max(finalRiskScore, 0), 98);
 
                 let status = "PASSED";
-                let auditSummary = "PASS: Real-time query against international consolidated screening lists and WCO tariff classifications returned zero active red-flags.";
-
-sanctions hits.";
+                let auditSummary = "PASS: Real-time query against international consolidated screening lists and WCO tariff classifications returned zero active sanctions hits.";
 
                 if (totalSanctionsHits > 0 || finalRiskScore >= 70) {
                     status = "FLAGGED";
-                    auditSummary = `⚠ FLAGGED: Direct match or high dual-use regulatory risk detected (${finalRiskScore}% score). Mandatory end-user verification and 
-
-bonding required.`;
+                    auditSummary = `⚠ FLAGGED: Direct match or high dual-use regulatory risk detected (${finalRiskScore}% score). Mandatory end-user verification and bonding required.`;
                 } else if (finalRiskScore >= 30) {
                     status = "WARNING";
                     auditSummary = "⚠ WARNING: Intermediate corridor or regulated tariff classification detected. Secondary customs documentation review required.";
@@ -286,6 +277,6 @@ bonding required.`;
 
 server.listen(PORT, function() {
     console.log('==================================================');
-    console.log('Eurasia AI Engine active on http://localhost:' + PORT);
+    console.log('Eurasia AI Engine active on port ' + PORT);
     console.log('==================================================');
 });
