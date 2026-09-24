@@ -12,6 +12,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+    <!-- Firebase Realtime Database SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --bg-dark: #030712;
@@ -156,8 +160,6 @@
         .status-badge { padding: 10px 22px; border-radius: 30px; font-weight: 800; font-size: 12px; text-transform: uppercase; }
 
         .status-PASSED { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
-        .status-WARNING { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
-        .status-FLAGGED { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
 
         .param-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
@@ -329,7 +331,7 @@
     <div class="modal-overlay" id="inboxModal">
         <div class="modal-card">
             <div class="modal-title">📥 Submitted Feedback Inbox</div>
-            <p style="font-size: 12px; color: var(--text-muted);">Recorded user feedback stored locally.</p>
+            <p style="font-size: 12px; color: var(--text-muted);">Recorded user feedback stored in live database.</p>
             <div class="feedback-list" id="feedbackList">
                 <div style="color: var(--text-muted); font-size: 12px;">Loading messages...</div>
             </div>
@@ -368,22 +370,34 @@
     <script>
         let currentAuditData = null;
 
-        // Manage Permanent Audit Counter via Browser Storage
-        function getAuditCount() {
-            let count = localStorage.getItem('globalAuditCount');
-            if (!count) {
-                count = 1; // Default initial audit count
-                localStorage.setItem('globalAuditCount', count);
-            }
-            return parseInt(count, 10);
-        }
+        // --- FIREBASE PERMANENT MULTI-TENANT COUNTER SETUP ---
+        const firebaseConfig = {
+            databaseURL: "https://eurasia-ai-57f0f-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auditRef = database.ref('globalAuditCount');
+        const feedbackRef = database.ref('feedbacks');
 
-        function updateAuditCountUI() {
-            const count = getAuditCount();
+        let currentGlobalCount = 0;
+
+        // Synchronize Counter across all visitors in real time
+        auditRef.on('value', (snapshot) => {
+            let count = snapshot.val();
+            if (count === null) {
+                auditRef.set(1);
+                count = 1;
+            }
+            currentGlobalCount = count;
             document.getElementById('globalAuditCount').innerText = count.toLocaleString();
+        });
+
+        // Increment Function permanently saves +1 in Google Cloud
+        function incrementGlobalAuditCount() {
+            auditRef.transaction((currentCount) => {
+                return (currentCount || 0) + 1;
+            });
         }
-        
-        updateAuditCountUI();
 
         const fileInput = document.getElementById('fileInput');
         const fileStatusText = document.getElementById('fileStatusText');
@@ -398,7 +412,6 @@
             reader.readAsText(file);
         });
 
-        // CLIENT-SIDE AUDIT LOGIC (Runs Without Server.js)
         function executeAudit() {
             const rawText = payloadInput.value.trim();
 
@@ -407,18 +420,14 @@
                 return;
             }
 
-            // Increment persistent audit counter
-            let newCount = getAuditCount() + 1;
-            localStorage.setItem('globalAuditCount', newCount);
-            updateAuditCountUI();
+            // Trigger global cloud increment
+            incrementGlobalAuditCount();
 
-            // Extract values or use intelligent defaults
             let exporter = "Eurasia Trade Exporters Ltd";
             let importer = "Global Imports & Logistics Corp";
             let hsCode = "8517.12.00";
             let productDescription = "Telecommunication Equipment & Semiconductors";
 
-            // Simple pattern matching for custom text input
             if (rawText.toLowerCase().includes("exporter:")) {
                 const match = rawText.match(/exporter:\s*([^\n,]+)/i);
                 if (match) exporter = match[1];
@@ -432,11 +441,10 @@
                 if (match) hsCode = match[0];
             }
 
-            // Generate audit payload object
             const data = {
                 status: 'PASSED',
                 risk_score: 12,
-                global_audit_count: newCount,
+                global_audit_count: currentGlobalCount + 1,
                 extracted_fields: {
                     exporter: exporter,
                     importer: importer,
@@ -448,7 +456,6 @@
 
             currentAuditData = data;
 
-            // Render Results on Screen
             document.getElementById('riskScore').innerText = data.risk_score;
             const badge = document.getElementById('statusBadge');
             badge.innerText = 'Automated Customs Clearance';
@@ -462,7 +469,7 @@
             document.getElementById('summaryVal').innerText = data.audit_summary;
         }
 
-        // Feedback Modal Functions
+        // Feedback Modal Controls
         function openFeedbackModal() { document.getElementById('feedbackModal').style.display = 'flex'; }
         function closeFeedbackModal() { document.getElementById('feedbackModal').style.display = 'none'; }
         
@@ -470,15 +477,12 @@
             const fbText = document.getElementById('fbText').value;
             if (!fbText) return alert("Please enter your feedback before submitting.");
             
-            let feedbackList = JSON.parse(localStorage.getItem('userFeedbacks') || '[]');
-            feedbackList.push({
-                id: feedbackList.length + 1,
+            feedbackRef.push({
                 timestamp: new Date().toISOString(),
                 feedback: fbText
             });
-            localStorage.setItem('userFeedbacks', JSON.stringify(feedbackList));
 
-            alert("Thank you! Your feedback has been saved.");
+            alert("Thank you! Your feedback has been saved to the database.");
             document.getElementById('fbText').value = '';
             closeFeedbackModal();
         }
@@ -486,24 +490,32 @@
         function openInboxModal() {
             document.getElementById('inboxModal').style.display = 'flex';
             const container = document.getElementById('feedbackList');
-            const list = JSON.parse(localStorage.getItem('userFeedbacks') || '[]');
 
-            if (list.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">No feedbacks received yet.</div>';
-                return;
-            }
+            feedbackRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">No feedbacks received yet.</div>';
+                    return;
+                }
 
-            container.innerHTML = list.map(item => `
-                <div class="feedback-item">
-                    <div style="font-size:10px; color:var(--accent-cyan); font-weight:700;">#${item.id} — ${new Date(item.timestamp).toLocaleString()}</div>
-                    <div style="margin-top:4px; color:#fff;">${item.feedback}</div>
-                </div>
-            `).join('');
+                const list = Object.keys(data).map((key, index) => ({
+                    id: index + 1,
+                    timestamp: data[key].timestamp,
+                    feedback: data[key].feedback
+                }));
+
+                container.innerHTML = list.map(item => `
+                    <div class="feedback-item">
+                        <div style="font-size:10px; color:var(--accent-cyan); font-weight:700;">#${item.id} — ${new Date(item.timestamp).toLocaleString()}</div>
+                        <div style="margin-top:4px; color:#fff;">${item.feedback}</div>
+                    </div>
+                `).join('');
+            });
         }
 
         function closeInboxModal() { document.getElementById('inboxModal').style.display = 'none'; }
 
-        // PDF CERTIFICATE GENERATION
+        // PDF Certificates
         function downloadCertificatePDF() {
             if (!currentAuditData) {
                 alert("Please execute an audit first before downloading the Compliance Certificate.");
@@ -583,7 +595,6 @@
             doc.save("Eurasia_AI_Compliance_Certificate.pdf");
         }
 
-        // TECHNICAL REPORT GENERATION
         function downloadTechnicalReportPDF() {
             if (!currentAuditData) {
                 alert("Please execute an audit first before downloading the Technical Audit Report.");
@@ -614,7 +625,7 @@
                     ['WCO Tariff Classification', currentAuditData.extracted_fields.hsCode, 'Chapter 84/85 Control Inspection'],
                     ['Corridor Scrutiny Status', 'Active Monitoring', 'Geopolitical Trade Path Check'],
                     ['Audit Timestamp', new Date().toLocaleString(), 'UTC Standard Logging'],
-                    ['Persistent Audit ID', `#${currentAuditData.global_audit_count}`, 'Local Ledger Synchronization']
+                    ['Persistent Audit ID', `#${currentAuditData.global_audit_count}`, 'Firebase Ledger Synchronization']
                 ],
                 theme: 'striped',
                 headStyles: { fillColor: [30, 41, 59], textColor: [0, 229, 255] },
